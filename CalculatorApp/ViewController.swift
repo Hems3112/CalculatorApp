@@ -20,13 +20,24 @@ class ViewController: UIViewController {
         return label
     }()
     
+    private var OldValueLabel : UILabel = {
+        let label = UILabel()
+        label.text = "0"
+        label.textColor = .lightGray
+        label.textAlignment = .right
+        label.numberOfLines = 0
+        label.adjustsFontSizeToFitWidth = true
+        label.font = UIFont(name: "Helvetica-Bold", size: 42)
+        return label
+    }()
+    
     var buttonSize : CGFloat = 0
     private let FontSize : CGFloat = 32.0
     
     var FirstNumber = 0.0
     var resultNumber = 0.0
     var CurrentOparatiuons : Operations?
-    
+    var arrInput : [String] = []
     
     enum Operations {
         case add, subtract , multiply , division ,equal
@@ -129,13 +140,19 @@ class ViewController: UIViewController {
         resultLabel.frame = CGRect(x: 0, y: ClearButoon.frame.origin.y - 110, width: holder.frame.size.width - 20, height: 120)
         holder.addSubview(resultLabel)
         
+        OldValueLabel.frame = CGRect(x: 0, y: resultLabel.frame.origin.y - 110, width: holder.frame.size.width - 20, height: 120)
+        
+        holder.addSubview(OldValueLabel)
+        
     }
 
     //MARK: -  Button Actions
     @objc func clearResult(){
         resultLabel.text = "0"
+        OldValueLabel.text = ""
         CurrentOparatiuons = nil
         FirstNumber = 0.0
+        arrInput = []
     }
     
     
@@ -149,35 +166,56 @@ class ViewController: UIViewController {
     
     
     @objc func NumberPressed(_ sender : UIButton){
-//        if CurrentOparatiuons == .equal{
-//            resultLabel.text = "0"
-//        }
+        if CurrentOparatiuons != nil || CurrentOparatiuons == .equal{
+            //let perform calculation from array value
+            performCalculation()
+        }
+       // performCalculation()
         let tag = sender.tag - 1
         if resultLabel.text == "0"{
             resultLabel.text = "\(tag)"
         }else if let value = resultLabel.text{
             resultLabel.text = "\(value)\(tag)"
         }
-        AppUtilities.sharedInstance.zoomInOutAnimation(ZoomnVW: sender)
+       AppUtilities.sharedInstance.zoomInOutAnimation(ZoomnVW: sender)
     }
     
+    func performCalculation(){
+        let StringToDelete = ["+","-","*","/","="]
+        let arrvalues = arrInput.split(separator: ", ")
+        for item in arrvalues.enumerated(){
+            if StringToDelete.contains(item as! String){
+                print("Operator found")
+            }else{
+                print("perform sum of before number")
+            }
+        }
+        print(arrvalues)
+       
+    }
+    
+    
     @objc func OperationPressed(_ sender : UIButton){
+        
         let tag = sender.tag
         if let text = resultLabel.text,let value = Double(text) , FirstNumber == 0.0{
             FirstNumber = value
             resultLabel.text = "0"
+            arrInput.append("\(FirstNumber)")
+        }else{
+            arrInput.append("\(resultLabel.text!)")
         }
         if tag == 1 {
             if let operation = CurrentOparatiuons{
                 var secondNumber = 0.0
                 if let text = resultLabel.text , let value = Double(text){
                     secondNumber = value
+                    
                 }
                 switch operation {
                 case .add:
                     let result = FirstNumber + secondNumber
                     resultLabel.text = "\(result.StringValue())"
-                   
                     break
                 case .subtract:
                     let result = FirstNumber - secondNumber
@@ -195,23 +233,30 @@ class ViewController: UIViewController {
                     break
                 }
             }
+            resultNumber = Double(resultLabel.text!) ?? 0.0
             CurrentOparatiuons = .equal
         }else if tag == 2{
             CurrentOparatiuons = .add
+            arrInput.append("+")
+            resultLabel.text = ""
         }else if tag == 3{
             CurrentOparatiuons = .subtract
+            arrInput.append("-")
+            resultLabel.text = ""
         }else if tag == 4{
             CurrentOparatiuons = .multiply
+            arrInput.append("*")
+            resultLabel.text = ""
         }else if tag == 5{
             CurrentOparatiuons = .division
+            arrInput.append("/")
+            resultLabel.text = ""
         }
-        resultNumber = Double(resultLabel.text!) ?? 0.0
         
+        OldValueLabel.text = "\(arrInput.joined(separator: ", "))"
     }
     
-    func SetFormattedResultValue(str : NSNumber){
-        
-    }
+    
     
     func ApplyDefaultRoundCorner_Border(btn : CustomButton){
         
