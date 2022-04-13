@@ -16,7 +16,7 @@ class ViewController: UIViewController {
         label.text = "0"
         label.textColor = .white
         label.textAlignment = .right
-        label.font = UIFont(name: "Helvetica-Bold", size: 82)
+        label.font = UIFont(name: "Helvetica-Bold", size: 60)
         return label
     }()
     
@@ -27,12 +27,12 @@ class ViewController: UIViewController {
         label.textAlignment = .right
         label.numberOfLines = 0
         label.adjustsFontSizeToFitWidth = true
-        label.font = UIFont(name: "Helvetica-Bold", size: 42)
+        label.font = UIFont(name: "Helvetica-Bold", size: 38)
         return label
     }()
     
     var buttonSize : CGFloat = 0
-    private let FontSize : CGFloat = 32.0
+    private var FontSize : CGFloat = 32.0
     
     var FirstNumber = 0.0
     var resultNumber = 0.0
@@ -51,6 +51,7 @@ class ViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         SetUpNumberPad()
+        FontSize = self.view.bounds.size.height * 0.045
     }
 
     private func SetUpNumberPad(){
@@ -76,7 +77,7 @@ class ViewController: UIViewController {
         //zeroButoon.tag = 1
         self.ApplyDefaultRoundCorner_Border(btn: DotButoon)
         DotButoon.titleLabel?.font = UIFont.systemFont(ofSize: FontSize + 10)
-        DotButoon.addTarget(self, action: #selector(ZeroPressed), for: .touchUpInside)
+        DotButoon.addTarget(self, action: #selector(DotPressed), for: .touchUpInside)
         holder.addSubview(DotButoon)
         
         
@@ -112,7 +113,7 @@ class ViewController: UIViewController {
         //Button CS (Clear Display)
         let ClearButoon : CustomButton = CustomButton(frame: .zero)
         ClearButoon.frame = CGRect(x: 0, y: holder.frame.size.height - (buttonSize * 5) - 25, width: holder.frame.size.width - buttonSize, height: buttonSize - 10)
-        ClearButoon.setTitle("CLEAR ALL", for: .normal)
+        ClearButoon.setTitle("AC", for: .normal)
         ClearButoon.setTitleColor(.white, for: .normal)
         ClearButoon.backgroundColor = UIColor.orange
         ClearButoon.titleLabel?.font = UIFont.systemFont(ofSize: FontSize)
@@ -141,7 +142,8 @@ class ViewController: UIViewController {
         holder.addSubview(resultLabel)
         
         OldValueLabel.frame = CGRect(x: 0, y: resultLabel.frame.origin.y - 110, width: holder.frame.size.width - 20, height: 120)
-        
+        OldValueLabel.font = UIFont(name: "Helvetica-Bold", size: FontSize)
+        resultLabel.font = UIFont(name: "Helvetica-Bold", size: FontSize * 1.25)
         holder.addSubview(OldValueLabel)
         
     }
@@ -164,11 +166,18 @@ class ViewController: UIViewController {
         }
     }
     
+    @objc func DotPressed(){
+        if !(resultLabel.text?.contains("."))!{
+            if let value = resultLabel.text{
+                resultLabel.text = "\(value).\(0)"
+            }
+        }
+    }
+    
     
     @objc func NumberPressed(_ sender : UIButton){
         if CurrentOparatiuons != nil || CurrentOparatiuons == .equal{
             //let perform calculation from array value
-            performCalculation()
         }
        // performCalculation()
         let tag = sender.tag - 1
@@ -181,16 +190,36 @@ class ViewController: UIViewController {
     }
     
     func performCalculation(){
-        let StringToDelete = ["+","-","*","/","="]
-        let arrvalues = arrInput.split(separator: ", ")
-        for item in arrvalues.enumerated(){
-            if StringToDelete.contains(item as! String){
-                print("Operator found")
-            }else{
-                print("perform sum of before number")
+       // let StringToDelete = ["+","-","*","/","="]
+        if let operation = CurrentOparatiuons{
+            var secondNumber = 0.0
+            if let text = resultLabel.text , let value = Double(text){
+                secondNumber = value
+            }
+            switch operation {
+            case .add:
+                let result = FirstNumber + secondNumber
+                resultLabel.text = "\(result.StringValue())"
+                break
+            case .subtract:
+                let result = FirstNumber - secondNumber
+                resultLabel.text = "\(result.StringValue())"
+                break
+            case .multiply:
+                let result = FirstNumber * secondNumber
+                resultLabel.text = "\(result.StringValue())"
+                break
+            case .division:
+                let result = FirstNumber / secondNumber
+                resultLabel.text = "\(result.StringValue())"
+                break
+            case .equal:
+                break
             }
         }
-        print(arrvalues)
+        resultNumber = Double(resultLabel.text!) ?? 0.0
+        print(FirstNumber)
+        print(resultNumber)
        
     }
     
@@ -201,59 +230,34 @@ class ViewController: UIViewController {
         if let text = resultLabel.text,let value = Double(text) , FirstNumber == 0.0{
             FirstNumber = value
             resultLabel.text = "0"
-            arrInput.append("\(FirstNumber)")
+            arrInput.insert("\(FirstNumber.clean)", at: 0)
+            //arrInput.append("\(FirstNumber.clean)")
         }else{
-            arrInput.append("\(resultLabel.text!)")
+            arrInput.insert("\(resultLabel.text!)", at: arrInput.count - 1)
+            //arrInput.append("\(resultLabel.text!)")
         }
         if tag == 1 {
-            if let operation = CurrentOparatiuons{
-                var secondNumber = 0.0
-                if let text = resultLabel.text , let value = Double(text){
-                    secondNumber = value
-                    
-                }
-                switch operation {
-                case .add:
-                    let result = FirstNumber + secondNumber
-                    resultLabel.text = "\(result.StringValue())"
-                    break
-                case .subtract:
-                    let result = FirstNumber - secondNumber
-                    resultLabel.text = "\(result.StringValue())"
-                    break
-                case .multiply:
-                    let result = FirstNumber * secondNumber
-                    resultLabel.text = "\(result.StringValue())"
-                    break
-                case .division:
-                    let result = FirstNumber / secondNumber
-                    resultLabel.text = "\(result.StringValue())"
-                    break
-                case .equal:
-                    break
-                }
-            }
-            resultNumber = Double(resultLabel.text!) ?? 0.0
             CurrentOparatiuons = .equal
         }else if tag == 2{
             CurrentOparatiuons = .add
             arrInput.append("+")
-            resultLabel.text = ""
+            
         }else if tag == 3{
             CurrentOparatiuons = .subtract
             arrInput.append("-")
-            resultLabel.text = ""
+           
         }else if tag == 4{
             CurrentOparatiuons = .multiply
             arrInput.append("*")
-            resultLabel.text = ""
+            
         }else if tag == 5{
             CurrentOparatiuons = .division
             arrInput.append("/")
-            resultLabel.text = ""
+           
         }
-        
+        performCalculation()
         OldValueLabel.text = "\(arrInput.joined(separator: ", "))"
+        resultLabel.text = ""
     }
     
     

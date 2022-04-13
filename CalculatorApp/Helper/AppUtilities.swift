@@ -78,8 +78,8 @@ extension Double {
     }
     func StringValue() -> String {
         let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 2
+       // formatter.numberStyle = .decimal
+       // formatter.maximumFractionDigits = 2
         let newvalue = formatter.string(from: NSNumber(value: self)) ?? ""
         return newvalue
     }
