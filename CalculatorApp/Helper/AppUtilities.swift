@@ -54,6 +54,7 @@ class CustomButton: UIButton {
     @IBInspectable var cornerRadius: CGFloat = 0 {
         didSet {
             layer.cornerRadius = cornerRadius
+            clipsToBounds = true
         }
     }
     
@@ -66,7 +67,7 @@ class CustomButton: UIButton {
     @IBInspectable var borderWidth: CGFloat = 0 {
         didSet {
             layer.borderWidth = borderWidth
-            
+            clipsToBounds = true
         }
     }
     
@@ -82,5 +83,45 @@ extension Double {
        // formatter.maximumFractionDigits = 2
         let newvalue = formatter.string(from: NSNumber(value: self)) ?? ""
         return newvalue
+    }
+}
+
+extension Sequence where Element: Numeric{
+    func limit(_ max: Int) -> [Element] {
+        return self.enumerated()
+            .filter { $0.offset < max }
+            .map { $0.element }
+    }
+    
+    func sum() -> Element {
+        return reduce(.zero, +)
+    }
+    
+}
+
+
+extension NSMutableAttributedString {
+    var fontSize:CGFloat { return 16 }
+    var boldFont:UIFont { return UIFont(name: "Palatino-Bold", size: fontSize+3) ?? UIFont.boldSystemFont(ofSize: fontSize) }
+    var normalFont:UIFont { return UIFont(name: "Palatino-Regular", size: fontSize) ?? UIFont.systemFont(ofSize: fontSize)}
+    
+    func bold(_ value:String) -> NSMutableAttributedString {
+        
+        let attributes:[NSAttributedString.Key : Any] = [
+            .font : boldFont
+        ]
+        
+        self.append(NSAttributedString(string: value, attributes:attributes))
+        return self
+    }
+    
+    func normal(_ value:String) -> NSMutableAttributedString {
+        
+        let attributes:[NSAttributedString.Key : Any] = [
+            .font : normalFont,
+        ]
+        
+        self.append(NSAttributedString(string: value, attributes:attributes))
+        return self
     }
 }
